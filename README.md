@@ -1,3 +1,4 @@
+
 # Imobiliária — Catálogo Imobiliário (Astro + Sanity + React + Tailwind + Framer Motion)
 
 ## 1. Criar o projeto Astro
@@ -233,3 +234,6 @@ específica por vez daqui pra frente.
 - Troque o número `5511999999999` (usado nos links de WhatsApp) pelo número real da
   imobiliária em todos os arquivos `.astro` e no `ContactForm.tsx`.
 - Lembre de preencher o número de **CRECI** real no rodapé do `index.astro`.
+=======
+# Catalogo-imobiliaria
+
