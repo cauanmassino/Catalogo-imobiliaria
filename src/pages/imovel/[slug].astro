@@ -1,0 +1,257 @@
+---
+import { sanityClient, optimizedImage } from '../../lib/sanity';
+import type { Property } from '../../lib/sanity';
+import Seo from '../../components/Seo.astro';
+import ImageGallery from '../../components/ImageGallery';
+import AmenitiesGrid from '../../components/AmenitiesGrid';
+import NearbyPlaces from '../../components/NearbyPlaces';
+import FinancingSimulator from '../../components/FinancingSimulator';
+import PropertyCard from '../../components/PropertyCard';
+import { citySlugToLabel } from '../../lib/cities';
+import '../../styles/global.css';
+import { ViewTransitions } from 'astro:transitions';
+import { KeyRound, Home, BedDouble, Bath, Car, Ruler, MessageCircle } from 'lucide-react';
+
+export async function getStaticPaths() {
+  // defined(slug.current) evita quebrar o build caso algum imóvel tenha
+  // sido publicado sem slug gerado.
+  const slugs: string[] = await sanityClient.fetch(`
+    *[_type == "property" && defined(slug.current)].slug.current
+  `);
+
+  return slugs
+    .filter(Boolean)
+    .map((slug) => ({
+      params: { slug },
+    }));
+}
+
+const { slug } = Astro.params;
+
+const property: Property = await sanityClient.fetch(
+  `*[_type == "property" && slug.current == $slug][0]{
+    _id, title, slug, city, neighborhood, type, price, description, featured,
+    bedrooms, bathrooms, parkingSpots, area, images, status, videoUrl,
+    amenities, nearbyPlaces
+  }`,
+  { slug }
+);
+
+if (!property) {
+  return Astro.redirect('/404');
+}
+
+// Imóveis similares: mesma cidade, exclui o atual, limite de 3
+const relatedProperties: Property[] = await sanityClient.fetch(
+  `*[_type == "property" && city == $city && slug.current != $slug] | order(_createdAt desc) [0...3]{
+    _id, title, slug, city, neighborhood, type, price, featured,
+    bedrooms, bathrooms, area, images
+  }`,
+  { city: property.city, slug }
+);
+
+const cityLabel = citySlugToLabel(property.city);
+const galleryUrls = property.images.map((img) => optimizedImage(img, 1400, 1050));
+const ogImage = property.images[0] ? optimizedImage(property.images[0], 1200, 630) : undefined;
+
+const statusLabels: Record<string, { label: string; className: string }> = {
+  lancamento: { label: 'Lançamento', className: 'bg-brass text-ink' },
+  em_construcao: { label: 'Em Construção', className: 'bg-ink-soft text-white' },
+  pronto: { label: 'Pronto para Morar', className: 'bg-ink text-white' },
+};
+const statusInfo = property.status ? statusLabels[property.status] : null;
+
+const whatsappMessage = encodeURIComponent(
+  `Olá! Tenho interesse no imóvel "${property.title}" em ${cityLabel}. Podemos conversar?`
+);
+const whatsappHref = `https://wa.me/5561999835448?text=${whatsappMessage}`;
+---
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <Seo
+      title={property.title}
+      description={property.description?.slice(0, 155) ?? `Imóvel disponível em ${cityLabel}.`}
+      image={ogImage}
+      type="article"
+    />
+    <ViewTransitions />
+  </head>
+  <body class="bg-paper text-ink antialiased font-sans">
+
+    <header class="sticky top-0 z-30 bg-paper/80 backdrop-blur-md border-b border-mist">
+      <div class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+        <a href="/" class="font-display font-bold text-xl tracking-tight text-ink flex items-center gap-2"><Home size={20} class="text-brass-dark" /> Imobiliária</a>
+        <a
+          href={whatsappHref}
+          target="_blank"
+          class="hidden sm:inline-flex items-center gap-2 bg-forest hover:bg-forest/90 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+        >
+          <MessageCircle size={16} class="inline -mt-0.5 mr-1" /> Falar no WhatsApp
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12 pb-32 lg:pb-12">
+      <nav class="font-mono text-sm text-slate mb-6">
+        <a href="/" class="hover:text-ink transition-colors">Início</a> /
+        <a href={`/imoveis/${property.city}`} class="hover:text-ink transition-colors">{cityLabel}</a> /
+        <span class="text-ink">{property.title}</span>
+      </nav>
+
+      <!-- Galeria de imagens em lightbox -->
+      <ImageGallery client:load images={galleryUrls} alt={property.title} />
+
+      <div class="grid lg:grid-cols-[1fr_360px] gap-10">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <span class="inline-block bg-brass-soft text-brass-dark text-xs font-mono font-semibold px-3 py-1.5 rounded-full">
+              {property.type === 'venda' ? <KeyRound size={13} class="inline -mt-0.5 mr-1" /> : <Home size={13} class="inline -mt-0.5 mr-1" />}{property.type === 'venda' ? 'Venda' : 'Aluguel'}
+            </span>
+            {statusInfo && (
+              <span class={`inline-block text-xs font-mono font-semibold px-3 py-1.5 rounded-full ${statusInfo.className}`}>
+                {statusInfo.label}
+              </span>
+            )}
+          </div>
+
+          <h1 class="font-display text-3xl sm:text-4xl font-bold tracking-tight mb-2 text-ink">{property.title}</h1>
+          <p class="text-slate mb-8">
+            {property.neighborhood ? `${property.neighborhood}, ` : ''}{cityLabel}
+          </p>
+
+          <!-- Características -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+            {property.bedrooms !== undefined && (
+              <div class="bg-white border border-mist rounded-2xl p-4 text-center">
+                <BedDouble size={22} class="mx-auto mb-1 text-brass-dark" />
+                <p class="font-mono font-semibold text-ink">{property.bedrooms}</p>
+                <p class="text-xs text-slate">Quartos</p>
+              </div>
+            )}
+            {property.bathrooms !== undefined && (
+              <div class="bg-white border border-mist rounded-2xl p-4 text-center">
+                <Bath size={22} class="mx-auto mb-1 text-brass-dark" />
+                <p class="font-mono font-semibold text-ink">{property.bathrooms}</p>
+                <p class="text-xs text-slate">Banheiros</p>
+              </div>
+            )}
+            {property.parkingSpots !== undefined && (
+              <div class="bg-white border border-mist rounded-2xl p-4 text-center">
+                <Car size={22} class="mx-auto mb-1 text-brass-dark" />
+                <p class="font-mono font-semibold text-ink">{property.parkingSpots}</p>
+                <p class="text-xs text-slate">Vagas</p>
+              </div>
+            )}
+            {property.area !== undefined && (
+              <div class="bg-white border border-mist rounded-2xl p-4 text-center">
+                <Ruler size={22} class="mx-auto mb-1 text-brass-dark" />
+                <p class="font-mono font-semibold text-ink">{property.area}m²</p>
+                <p class="text-xs text-slate">Área</p>
+              </div>
+            )}
+          </div>
+
+          <!-- Descrição -->
+          <div class="reveal mb-10">
+            <h2 class="font-display text-xl font-bold mb-3 text-ink">Sobre o imóvel</h2>
+            <p class="text-slate leading-relaxed whitespace-pre-line">
+              {property.description}
+            </p>
+          </div>
+
+          <!-- Lazer e Infraestrutura — só aparece se o imóvel tiver amenidades cadastradas -->
+          {property.amenities && property.amenities.length > 0 && (
+            <div class="mb-10">
+              <h2 class="font-display text-xl font-bold mb-4 text-ink">Lazer e Infraestrutura</h2>
+              <AmenitiesGrid client:visible amenities={property.amenities} />
+            </div>
+          )}
+
+          <!-- Localização — só aparece se houver pontos de interesse cadastrados -->
+          {property.nearbyPlaces && property.nearbyPlaces.length > 0 && (
+            <div class="mb-10">
+              <h2 class="font-display text-xl font-bold mb-4 text-ink">Localização</h2>
+              <div class="rounded-2xl overflow-hidden border border-mist mb-4 h-64">
+                <iframe
+                  title={`Mapa de ${cityLabel}`}
+                  width="100%"
+                  height="100%"
+                  style="border:0"
+                  loading="lazy"
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(`${property.neighborhood ?? ''} ${cityLabel}`)}&output=embed`}
+                />
+              </div>
+              <NearbyPlaces client:visible places={property.nearbyPlaces} />
+            </div>
+          )}
+
+          <!-- Simulador de financiamento -->
+          <div class="lg:hidden mb-10">
+            <FinancingSimulator client:visible price={property.price} />
+          </div>
+        </div>
+
+        <!-- Card lateral de preço + CTA + simulador (desktop) -->
+        <aside class="hidden lg:flex lg:flex-col gap-6 sticky top-24 h-fit">
+          <div class="bg-white border border-mist rounded-3xl p-6">
+            <p class="text-sm text-slate mb-1">
+              {property.type === 'venda' ? 'Valor de venda' : 'Valor do aluguel'}
+            </p>
+            <p class="font-display text-3xl font-bold text-ink mb-6 tabular-nums">
+              R$ {property.price.toLocaleString('pt-BR')}
+              {property.type === 'aluguel' && <span class="text-base font-sans font-medium text-slate"> /mês</span>}
+            </p>
+            <a
+              href={whatsappHref}
+              target="_blank"
+              class="flex items-center justify-center gap-2 w-full bg-forest hover:bg-forest/90 text-white font-semibold py-4 rounded-2xl transition-colors"
+            >
+              <MessageCircle size={16} class="inline -mt-0.5 mr-1" /> Falar com corretor
+            </a>
+          </div>
+
+          {property.type === 'venda' && (
+            <FinancingSimulator client:visible price={property.price} />
+          )}
+        </aside>
+      </div>
+
+      <!-- Imóveis Similares -->
+      {relatedProperties.length > 0 && (
+        <section class="reveal mt-16 pt-12 border-t border-mist">
+          <h2 class="font-display text-2xl sm:text-3xl font-bold tracking-tight mb-8 text-ink">
+            Imóveis similares em {cityLabel}
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {relatedProperties.map((related) => (
+              <PropertyCard client:visible property={related} />
+            ))}
+          </div>
+        </section>
+      )}
+    </main>
+
+    <!-- CTA fixo no mobile (ao alcance do polegar), com pulso sutil -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 z-40 p-4 bg-white border-t border-mist">
+      <div class="flex items-center justify-between gap-4">
+        <p class="font-display text-xl font-bold text-ink whitespace-nowrap tabular-nums">
+          R$ {property.price.toLocaleString('pt-BR')}
+        </p>
+        <a
+          href={whatsappHref}
+          target="_blank"
+          class="relative flex-1 flex items-center justify-center gap-2 bg-forest active:bg-forest/90 text-white font-semibold py-3.5 rounded-2xl overflow-hidden"
+        >
+          <span class="absolute inset-0 rounded-2xl bg-forest animate-ping-slow opacity-40" aria-hidden="true" />
+          <span class="relative"><MessageCircle size={16} class="inline -mt-0.5 mr-1" /> Falar com corretor</span>
+        </a>
+      </div>
+    </div>
+
+    <script>
+      import '../../scripts/reveal';
+    </script>
+  </body>
+</html>

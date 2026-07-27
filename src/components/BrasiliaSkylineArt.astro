@@ -1,0 +1,41 @@
+---
+// Ilustração vetorial original, inspirada de forma genérica na linguagem
+// arquitetônica modernista de Brasília (arcos, cúpula, colunas) — não é o
+// desenho de nenhum edifício específico, é uma composição própria.
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+<svg
+  class={className}
+  viewBox="0 0 1200 220"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  preserveAspectRatio="none"
+  aria-hidden="true"
+>
+  <!-- Colunas -->
+  <rect x="90" y="90" width="10" height="130" fill="currentColor" />
+  <rect x="130" y="70" width="10" height="150" fill="currentColor" />
+  <!-- Cúpula (inspirada em formas de cúpula/domo) -->
+  <path d="M220 220 C220 150 280 110 340 110 C400 110 460 150 460 220 Z" fill="currentColor" />
+  <!-- Prato/bowl invertido -->
+  <path d="M520 220 C520 170 580 175 640 175 C700 175 760 170 760 220 Z" fill="currentColor" />
+  <!-- Torre -->
+  <rect x="860" y="40" width="14" height="180" fill="currentColor" />
+  <circle cx="867" cy="30" r="14" fill="currentColor" />
+  <!-- Arcos -->
+  <path
+    d="M940 220 V150 C940 128 958 110 980 110 C1002 110 1020 128 1020 150 V220"
+    stroke="currentColor"
+    stroke-width="10"
+    fill="none"
+  />
+  <path
+    d="M1040 220 V160 C1040 142 1054 128 1072 128 C1090 128 1104 142 1104 160 V220"
+    stroke="currentColor"
+    stroke-width="8"
+    fill="none"
+  />
+</svg>

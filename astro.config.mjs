@@ -1,0 +1,10 @@
+import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
+import tailwind from '@astrojs/tailwind';
+import vercel from '@astrojs/vercel/static';
+
+export default defineConfig({
+  output: 'static', // SSG puro: as páginas são geradas no build (getStaticPaths)
+  adapter: vercel(),
+  integrations: [react(), tailwind()],
+});
