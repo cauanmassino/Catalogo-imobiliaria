@@ -1,26 +1,32 @@
 import { createClient } from '@sanity/client'
-import imageUrlBuilder from '@sanity/image-url'
+import { createImageUrlBuilder } from '@sanity/image-url'
 
-// Preencha com os dados do seu projeto Sanity (painel sanity.io/manage)
+// Cliente do Sanity usado no front-end público
 export const sanityClient = createClient({
   projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
   dataset: import.meta.env.PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
-  useCdn: true, // true = respostas mais rápidas e em cache (ideal para o site público)
+  useCdn: true,
 })
 
-const builder = imageUrlBuilder(sanityClient)
+const builder = createImageUrlBuilder(sanityClient)
 
+// Builder encadeável para casos em que você queira fazer:
+// urlFor(image).width(1200).height(800).url()
 export function urlFor(source: any) {
   return builder.image(source)
 }
 
-// Atalho para imagens otimizadas: pede ao CDN do Sanity para servir o melhor
-// formato moderno suportado pelo navegador (AVIF/WebP) automaticamente,
-// com qualidade ajustada — sem precisar gerar/hospedar variantes manualmente.
+// Atalho para retornar a URL pronta já otimizada
 export function optimizedImage(source: any, width: number, height?: number) {
+  if (!source) return '/placeholder-imovel.jpg'
+
   let img = builder.image(source).auto('format').quality(80).width(width)
-  if (height) img = img.height(height)
+
+  if (height) {
+    img = img.height(height)
+  }
+
   return img.url()
 }
 

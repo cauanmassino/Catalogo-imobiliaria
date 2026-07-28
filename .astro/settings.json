@@ -1,9 +1,5 @@
 {
-	"css.lint.unknownAtRules": "ignore",
-	"files.associations": {
-		"*.css": "tailwindcss"
-	},
 	"_variables": {
-		"lastUpdateCheck": 1785041133662
+		"lastUpdateCheck": 1785204470386
 	}
 }
