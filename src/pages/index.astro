@@ -2,7 +2,6 @@
 import { sanityClient, optimizedImage } from '../lib/sanity';
 import type { Property } from '../lib/sanity';
 import ContactForm from '../components/ContactForm';
-
 import Seo from '../components/Seo.astro';
 import { citySlugToLabel } from '../lib/cities';
 import '../styles/global.css';
@@ -17,7 +16,6 @@ const featuredProperties: Property[] = await sanityClient.fetch(`
 `);
 
 const [heroListing, ...restFeatured] = featuredProperties;
-const heroPropertyForNav = featuredProperties[0] ?? null;
 
 const citiesRaw: { city: string }[] = await sanityClient.fetch(`
   *[_type == "property" && defined(city)]{ city }
@@ -39,14 +37,8 @@ const stats = [
   { label: 'Imóveis entregues', value: 98, prefix: '+' },
   { label: 'Regiões atendidas', value: 12, prefix: '' },
 ];
-
-const differentiators = [
-  { title: 'Conhecimento local, de verdade', text: 'Do Plano Piloto às cidades satélites, entendemos o ritmo real de cada região.' },
-  { title: 'Atendimento direto', text: 'O cliente fala com pessoas reais do primeiro contato à entrega das chaves.' },
-  { title: 'Negociação transparente', text: 'Documentação clara, processo objetivo e condução sem ruído.' },
-  { title: 'Orientação de financiamento', text: 'Ajudamos a entender a viabilidade antes de qualquer decisão importante.' },
-];
 ---
+
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
@@ -65,15 +57,17 @@ const differentiators = [
 
     <header id="site-header" class="header-on-hero fixed top-0 left-0 right-0 z-40 border-b transition-colors duration-300">
       <div class="max-w-7xl mx-auto px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-4">
-<a href="/" class="flex items-center header-text">
-<img
-  src="/images/logo.png"
-  alt="Logo da sua imobiliária"
-  class="h-24 sm:h-26 w-auto object-contain"
-  loading="eager"
-  decoding="async"
-/>
-</a>
+        <a href="/" class="flex items-center header-text">
+          <img
+            src="/images/logo.png"
+            alt="Logo da sua imobiliária"
+            class="h-24 sm:h-26 w-auto object-contain"
+            loading="eager"
+            decoding="async"
+            width="600"
+            height="240"
+          />
+        </a>
 
         <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-white/75 header-text">
           <a href="#catalogo" class="hover:text-white transition-colors">Catálogo</a>
@@ -94,17 +88,17 @@ const differentiators = [
     </header>
 
     <section class="relative overflow-hidden min-h-[92svh] flex items-end pt-24 pb-10 sm:pb-16 bg-ink noise-texture">
-<img
-  src="/images/hero.jpg"
-  alt="Vista aérea de Brasília à noite"
-  class="absolute inset-0 h-full w-full object-cover opacity-190"
-  loading="eager"
-  decoding="async"
-  width="1600"
-  height="900"
-/>
-<div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(8,8,8,0.12),rgba(8,8,8,0.28),rgba(247,246,242,0.82))]" />
-<div class="absolute inset-0 blueprint-grid opacity-10" />
+      <img
+        src="/images/hero.jpg" 
+        alt="Vista aérea de Brasília à noite"
+        class="absolute inset-0 h-full w-full object-cover opacity-40"
+        loading="eager"
+        decoding="async"
+        width="1600"
+        height="900"
+      />
+      <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(8,8,8,0.12),rgba(8,8,8,0.28),rgba(247,246,242,0.82))]" />
+      <div class="absolute inset-0 blueprint-grid opacity-10" />
 
       <div class="relative w-full max-w-7xl mx-auto px-5 sm:px-8 grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-20 items-end">
         <div class="max-w-3xl">
@@ -144,16 +138,14 @@ const differentiators = [
           <div class="reveal grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:gap-x-8 sm:gap-y-4 border-t border-white/10 pt-6" data-reveal-delay="300">
             {stats.slice(0, 4).map((stat) => (
               <div>
-<p class="font-display text-2xl sm:text-3xl font-bold text-white">
-  {stat.prefix}{stat.value}
-</p>
+                <p class="font-display text-2xl sm:text-3xl font-bold text-white">
+                  {stat.prefix}{stat.value}
+                </p>
                 <p class="text-[11px] sm:text-xs text-white/45 mt-0.5">{stat.label}</p>
               </div>
             ))}
           </div>
         </div>
-
-      
       </div>
     </section>
 
@@ -164,169 +156,169 @@ const differentiators = [
           <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-ink">Imóveis em destaque</h2>
         </div>
 
-{heroListing ? (
-  <div class="space-y-6">
-<div class="reveal">
-  {(() => {
-    const property = heroListing;
-    const href = property.slug?.current ? `/imovel/${property.slug.current}` : '#';
-    const title = property.title || 'Imóvel sem título';
-    const city = property.city || 'Cidade não informada';
-    const neighborhood = property.neighborhood || '';
-    const bedrooms = typeof property.bedrooms === 'number' ? property.bedrooms : null;
-    const bathrooms = typeof property.bathrooms === 'number' ? property.bathrooms : null;
-    const area = typeof property.area === 'number' ? property.area : null;
-    const description = property.description?.trim() || '';
-    const price =
-      typeof property.price === 'number'
-        ? `R$ ${property.price.toLocaleString('pt-BR')}`
-        : 'Preço sob consulta';
+        {heroListing ? (
+          <div class="space-y-6">
+            <div class="reveal">
+              {(() => {
+                const property = heroListing;
+                const href = property.slug?.current ? `/imovel/${property.slug.current}` : '#';
+                const title = property.title || 'Imóvel sem título';
+                const city = property.city || 'Cidade não informada';
+                const neighborhood = property.neighborhood || '';
+                const bedrooms = typeof property.bedrooms === 'number' ? property.bedrooms : null;
+                const bathrooms = typeof property.bathrooms === 'number' ? property.bathrooms : null;
+                const area = typeof property.area === 'number' ? property.area : null;
+                const description = property.description?.trim() || '';
+                const price =
+                  typeof property.price === 'number'
+                    ? `R$ ${property.price.toLocaleString('pt-BR')}`
+                    : 'Preço sob consulta';
 
-    let coverImage = '/placeholder-imovel.jpg';
+                let coverImage = '/placeholder-imovel.jpg';
 
-    try {
-      if (property.images?.[0]) {
-        coverImage = optimizedImage(property.images[0], 1200, 800);
-      }
-    } catch {
-      coverImage = '/placeholder-imovel.jpg';
-    }
+                try {
+                  if (property.images?.[0]) {
+                    coverImage = optimizedImage(property.images[0], 1200, 800);
+                  }
+                } catch {
+                  coverImage = '/placeholder-imovel.jpg';
+                }
 
-    return (
-      <a
-        href={href}
-        class="block rounded-[2rem] overflow-hidden border border-mist bg-white shadow-sm hover:shadow-xl transition-shadow"
-      >
-        <div class="grid lg:grid-cols-2">
-          <div class="relative h-[320px] lg:h-full bg-mist">
-            <img
-              src={coverImage}
-              alt={title}
-              class="w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
+                return (
+                  <a
+                    href={href}
+                    class="block rounded-[2rem] overflow-hidden border border-mist bg-white shadow-sm hover:shadow-xl transition-shadow"
+                  >
+                    <div class="grid lg:grid-cols-2">
+                      <div class="relative h-[320px] lg:h-full bg-mist">
+                        <img
+                          src={coverImage}
+                          alt={title}
+                          class="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
 
-            <span class="absolute top-4 left-4 bg-paper/90 backdrop-blur-md text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
-              {property.type === 'venda' ? 'Venda' : 'Aluguel'}
-            </span>
+                        <span class="absolute top-4 left-4 bg-paper/90 backdrop-blur-md text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
+                          {property.type === 'venda' ? 'Venda' : 'Aluguel'}
+                        </span>
 
-            {property.featured && (
-              <span class="absolute top-4 right-4 bg-brass text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
-                Destaque
-              </span>
+                        {property.featured && (
+                          <span class="absolute top-4 right-4 bg-brass text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
+                            Destaque
+                          </span>
+                        )}
+                      </div>
+
+                      <div class="p-8 flex flex-col justify-between gap-6">
+                        <div>
+                          <p class="text-xs text-slate uppercase tracking-wide mb-2">
+                            {neighborhood ? `${neighborhood}, ` : ''}{city}
+                          </p>
+
+                          <h3 class="font-display text-3xl font-semibold text-ink leading-tight mb-4">
+                            {title}
+                          </h3>
+
+                          <div class="flex flex-wrap items-center gap-4 text-sm text-slate mb-4">
+                            {bedrooms !== null && <span>{bedrooms} quartos</span>}
+                            {bathrooms !== null && <span>{bathrooms} banheiros</span>}
+                            {area !== null && <span>{area}m²</span>}
+                          </div>
+
+                          {description && (
+                            <p class="text-slate leading-relaxed line-clamp-3">
+                              {description}
+                            </p>
+                          )}
+                        </div>
+
+                        <p class="font-display text-3xl font-bold text-ink">{price}</p>
+                      </div>
+                    </div>
+                  </a>
+                );
+              })()}
+            </div>
+
+            {restFeatured.length > 0 && (
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 pb-2 sm:pb-0">
+                {restFeatured.map((property, i) => {
+                  const href = property.slug?.current ? `/imovel/${property.slug.current}` : '#';
+                  const title = property.title || 'Imóvel sem título';
+                  const city = property.city || 'Cidade não informada';
+                  const neighborhood = property.neighborhood || '';
+                  const bedrooms = typeof property.bedrooms === 'number' ? property.bedrooms : null;
+                  const bathrooms = typeof property.bathrooms === 'number' ? property.bathrooms : null;
+                  const area = typeof property.area === 'number' ? property.area : null;
+                  const price =
+                    typeof property.price === 'number'
+                      ? `R$ ${property.price.toLocaleString('pt-BR')}`
+                      : 'Preço sob consulta';
+
+                  let coverImage = '/placeholder-imovel.jpg';
+
+                  try {
+                    if (property.images?.[0]) {
+                      coverImage = optimizedImage(property.images[0], 600, 450);
+                    }
+                  } catch {
+                    coverImage = '/placeholder-imovel.jpg';
+                  }
+
+                  return (
+                    <div class={`reveal ${i % 3 === 1 ? 'sm:mt-8' : ''}`} data-reveal-delay={String(i * 80)}>
+                      <a
+                        href={href}
+                        class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow border border-mist flex flex-col"
+                      >
+                        <div class="relative h-64 bg-mist">
+                          <img
+                            src={coverImage}
+                            alt={title}
+                            class="w-full h-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                          />
+
+                          <span class="absolute top-4 left-4 bg-paper/90 backdrop-blur-md text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
+                            {property.type === 'venda' ? 'Venda' : 'Aluguel'}
+                          </span>
+
+                          {property.featured && (
+                            <span class="absolute top-4 right-4 bg-brass text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
+                              Destaque
+                            </span>
+                          )}
+                        </div>
+
+                        <div class="p-6 flex flex-col flex-grow">
+                          <p class="text-xs text-slate uppercase tracking-wide mb-1">
+                            {neighborhood ? `${neighborhood}, ` : ''}{city}
+                          </p>
+
+                          <h3 class="font-display text-xl font-semibold text-ink mb-3">
+                            {title}
+                          </h3>
+
+                          <div class="flex flex-wrap items-center gap-4 text-sm text-slate mb-4">
+                            {bedrooms !== null && <span>{bedrooms} quartos</span>}
+                            {bathrooms !== null && <span>{bathrooms} banheiros</span>}
+                            {area !== null && <span>{area}m²</span>}
+                          </div>
+
+                          <p class="font-display text-2xl font-bold text-ink mt-auto">
+                            {price}
+                          </p>
+                        </div>
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
-
-          <div class="p-8 flex flex-col justify-between gap-6">
-            <div>
-              <p class="text-xs text-slate uppercase tracking-wide mb-2">
-                {neighborhood ? `${neighborhood}, ` : ''}{city}
-              </p>
-
-              <h3 class="font-display text-3xl font-semibold text-ink leading-tight mb-4">
-                {title}
-              </h3>
-
-              <div class="flex flex-wrap items-center gap-4 text-sm text-slate mb-4">
-                {bedrooms !== null && <span>{bedrooms} quartos</span>}
-                {bathrooms !== null && <span>{bathrooms} banheiros</span>}
-                {area !== null && <span>{area}m²</span>}
-              </div>
-
-              {description && (
-                <p class="text-slate leading-relaxed line-clamp-3">
-                  {description}
-                </p>
-              )}
-            </div>
-
-            <p class="font-display text-3xl font-bold text-ink">{price}</p>
-          </div>
-        </div>
-      </a>
-    );
-  })()}
-</div>
-
-{restFeatured.length > 0 && (
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 pb-2 sm:pb-0">
-    {restFeatured.map((property, i) => {
-      const href = property.slug?.current ? `/imovel/${property.slug.current}` : '#';
-      const title = property.title || 'Imóvel sem título';
-      const city = property.city || 'Cidade não informada';
-      const neighborhood = property.neighborhood || '';
-      const bedrooms = typeof property.bedrooms === 'number' ? property.bedrooms : null;
-      const bathrooms = typeof property.bathrooms === 'number' ? property.bathrooms : null;
-      const area = typeof property.area === 'number' ? property.area : null;
-      const price =
-        typeof property.price === 'number'
-          ? `R$ ${property.price.toLocaleString('pt-BR')}`
-          : 'Preço sob consulta';
-
-      let coverImage = '/placeholder-imovel.jpg';
-
-      try {
-        if (property.images?.[0]) {
-          coverImage = optimizedImage(property.images[0], 600, 450);
-        }
-      } catch {
-        coverImage = '/placeholder-imovel.jpg';
-      }
-
-      return (
-        <div class={`reveal ${i % 3 === 1 ? 'sm:mt-8' : ''}`} data-reveal-delay={String(i * 80)}>
-          <a
-            href={href}
-            class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow border border-mist flex flex-col"
-          >
-            <div class="relative h-64 bg-mist">
-              <img
-                src={coverImage}
-                alt={title}
-                class="w-full h-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-
-              <span class="absolute top-4 left-4 bg-paper/90 backdrop-blur-md text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
-                {property.type === 'venda' ? 'Venda' : 'Aluguel'}
-              </span>
-
-              {property.featured && (
-                <span class="absolute top-4 right-4 bg-brass text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
-                  Destaque
-                </span>
-              )}
-            </div>
-
-            <div class="p-6 flex flex-col flex-grow">
-              <p class="text-xs text-slate uppercase tracking-wide mb-1">
-                {neighborhood ? `${neighborhood}, ` : ''}{city}
-              </p>
-
-              <h3 class="font-display text-xl font-semibold text-ink mb-3">
-                {title}
-              </h3>
-
-              <div class="flex flex-wrap items-center gap-4 text-sm text-slate mb-4">
-                {bedrooms !== null && <span>{bedrooms} quartos</span>}
-                {bathrooms !== null && <span>{bathrooms} banheiros</span>}
-                {area !== null && <span>{area}m²</span>}
-              </div>
-
-              <p class="font-display text-2xl font-bold text-ink mt-auto">
-                {price}
-              </p>
-            </div>
-          </a>
-        </div>
-      );
-    })}
-  </div>
-)}
-  </div>
-) : (
+        ) : (
           <p class="text-slate py-12">Nenhum imóvel em destaque publicado ainda.</p>
         )}
       </div>
@@ -408,16 +400,16 @@ const differentiators = [
                 Cada imóvel entra no catálogo com uma intenção clara: apresentar valor real, reduzir ruído e reforçar confiança antes da conversa comercial.
               </p>
 
-<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-  {stats.map((stat) => (
-    <div class="rounded-[1.5rem] border border-mist bg-paper px-4 py-5">
-      <p class="font-display text-3xl sm:text-[2.4rem] font-bold text-ink tabular-nums leading-none mb-2">
-        {stat.prefix}{stat.value}
-      </p>
-      <p class="text-[11px] sm:text-xs uppercase tracking-[0.18em] text-slate">{stat.label}</p>
-    </div>
-  ))}
-</div>
+              <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {stats.map((stat) => (
+                  <div class="rounded-[1.5rem] border border-mist bg-paper px-4 py-5">
+                    <p class="font-display text-3xl sm:text-[2.4rem] font-bold text-ink tabular-nums leading-none mb-2">
+                      {stat.prefix}{stat.value}
+                    </p>
+                    <p class="text-[11px] sm:text-xs uppercase tracking-[0.18em] text-slate">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
 
               <div class="grid gap-4 sm:grid-cols-2">
                 <p class="rounded-[1.5rem] border border-mist bg-white px-5 py-5 text-slate leading-relaxed">
@@ -485,14 +477,16 @@ const differentiators = [
         <div class="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] mb-12 items-end">
           <div>
             <a href="/" class="inline-flex items-center">
-  <img
-    src="/images/logo.png"
-    alt="Logo da sua imobiliária"
-    class="h-12 w-auto object-contain"
-    loading="lazy"
-    decoding="async"
-  />
-</a>
+              <img
+                src="/images/logo.png"
+                alt="Logo da sua imobiliária"
+                class="h-12 w-auto object-contain"
+                loading="lazy"
+                decoding="async"
+                width="600"
+                height="240"
+              />
+            </a>
             <p class="font-display text-4xl sm:text-5xl lg:text-[4.4rem] font-bold tracking-[-0.05em] leading-[0.95] text-white max-w-3xl">
               Brasília em um catálogo pensado com calma.
             </p>
