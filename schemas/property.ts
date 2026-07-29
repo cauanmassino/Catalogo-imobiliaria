@@ -55,7 +55,8 @@ export default defineType({
       title: 'Região Administrativa',
       type: 'string',
       group: 'principal',
-      description: 'Selecione a região de Brasília/DF onde fica o imóvel. Para adicionar uma nova região à lista, edite o array CITY_OPTIONS no topo deste arquivo (schemas/property.ts).',
+      description:
+        'Selecione a região de Brasília/DF onde fica o imóvel. Para adicionar uma nova região à lista, edite o array CITY_OPTIONS no topo deste arquivo (schemas/property.ts).',
       options: {
         list: CITY_OPTIONS,
         layout: 'dropdown',
@@ -81,6 +82,23 @@ export default defineType({
         layout: 'radio',
       },
       validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'propertyKind',
+      title: 'Tipo do Imóvel',
+      type: 'string',
+      group: 'principal',
+      initialValue: 'apartamento',
+      options: {
+        list: [
+          { title: 'Casa', value: 'casa' },
+          { title: 'Apartamento', value: 'apartamento' },
+        ],
+        layout: 'radio',
+      },
+      validation: (Rule) => Rule.required(),
+      description:
+        'Define a categoria do imóvel para filtros no site. Ex.: casa ou apartamento.',
     }),
     defineField({
       name: 'price',

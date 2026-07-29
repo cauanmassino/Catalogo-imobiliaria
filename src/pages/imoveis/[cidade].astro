@@ -18,6 +18,7 @@ const cityHeroImages: Record<string, string> = {
   'samambaia': '/images/cities/samambaia.jpg',
   'ceilandia': '/images/cities/ceilandia.jpg',
 };
+
 export async function getStaticPaths() {
   const citiesRaw: { city: string }[] = await sanityClient.fetch(`
     *[_type == "property" && defined(city)]{
@@ -44,6 +45,7 @@ const allProperties: Property[] = await sanityClient.fetch(
     city,
     neighborhood,
     type,
+    propertyKind,
     price,
     featured,
     bedrooms,
@@ -59,8 +61,9 @@ const heroProperty = allProperties[0] ?? null;
 
 const presetHeroImage = citySlug ? cityHeroImages[citySlug] : null;
 
-const heroImage = presetHeroImage
-  ?? (heroProperty?.images?.[0]
+const heroImage =
+  presetHeroImage ??
+  (heroProperty?.images?.[0]
     ? optimizedImage(heroProperty.images[0], 1400, 900)
     : null);
 
@@ -131,9 +134,36 @@ const title = citySlugToLabel(citySlug);
           <div class="rounded-[1.75rem] border border-mist bg-paper shadow-[0_14px_36px_rgba(22,21,19,0.06)] px-4 sm:px-6 py-4 sm:py-5">
             <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-slate mb-1">Catálogo</p>
             <h2 class="font-display text-xl sm:text-2xl font-semibold text-ink">Encontre com mais precisão</h2>
+
             <p class="mt-3 text-sm text-slate">
-              {allProperties.length} resultado{allProperties.length === 1 ? '' : 's'} encontrado{allProperties.length === 1 ? '' : 's'}
+              <span data-results-text>
+                {allProperties.length} resultado{allProperties.length === 1 ? '' : 's'} encontrado{allProperties.length === 1 ? '' : 's'}
+              </span>
             </p>
+
+            <div class="mt-5 flex flex-wrap gap-2">
+              <button
+                type="button"
+                data-filter-btn="todos"
+                class="inline-flex items-center justify-center rounded-full border border-ink bg-ink px-4 py-2 text-sm font-medium text-white transition-colors"
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                data-filter-btn="casa"
+                class="inline-flex items-center justify-center rounded-full border border-mist bg-white px-4 py-2 text-sm font-medium text-slate transition-colors"
+              >
+                Casa
+              </button>
+              <button
+                type="button"
+                data-filter-btn="apartamento"
+                class="inline-flex items-center justify-center rounded-full border border-mist bg-white px-4 py-2 text-sm font-medium text-slate transition-colors"
+              >
+                Apartamento
+              </button>
+            </div>
           </div>
 
           <div class="flex items-center justify-between gap-4">
@@ -144,83 +174,103 @@ const title = citySlugToLabel(citySlug);
 
             <span class="hidden sm:inline-flex items-center gap-2 rounded-full border border-mist bg-white px-4 py-2 text-sm text-slate">
               <MapPin size={14} />
-              {allProperties.length} imóveis
+              <span data-results-count>{allProperties.length}</span> imóveis
             </span>
           </div>
 
           {allProperties.length > 0 ? (
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allProperties.map((property) => {
-                const href = property.slug?.current ? `/imovel/${property.slug.current}` : '#';
-                const cardTitle = property.title || 'Imóvel sem título';
-                const city = property.city || 'Cidade não informada';
-                const neighborhood = property.neighborhood || '';
-                const bedrooms = typeof property.bedrooms === 'number' ? property.bedrooms : null;
-                const bathrooms = typeof property.bathrooms === 'number' ? property.bathrooms : null;
-                const area = typeof property.area === 'number' ? property.area : null;
-                const price =
-                  typeof property.price === 'number'
-                    ? `R$ ${property.price.toLocaleString('pt-BR')}`
-                    : 'Preço sob consulta';
+            <>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-properties-grid>
+                {allProperties.map((property) => {
+                  const href = property.slug?.current ? `/imovel/${property.slug.current}` : '#';
+                  const cardTitle = property.title || 'Imóvel sem título';
+                  const city = property.city || 'Cidade não informada';
+                  const neighborhood = property.neighborhood || '';
+                  const bedrooms = typeof property.bedrooms === 'number' ? property.bedrooms : null;
+                  const bathrooms = typeof property.bathrooms === 'number' ? property.bathrooms : null;
+                  const area = typeof property.area === 'number' ? property.area : null;
+                  const price =
+                    typeof property.price === 'number'
+                      ? `R$ ${property.price.toLocaleString('pt-BR')}`
+                      : 'Preço sob consulta';
 
-                let coverImage = '/placeholder-imovel.jpg';
+                  const propertyKind = property.propertyKind || 'apartamento';
 
-                try {
-                  if (property.images?.[0]) {
-                    coverImage = optimizedImage(property.images[0], 600, 450);
+                  let coverImage = '/placeholder-imovel.jpg';
+
+                  try {
+                    if (property.images?.[0]) {
+                      coverImage = optimizedImage(property.images[0], 600, 450);
+                    }
+                  } catch {
+                    coverImage = '/placeholder-imovel.jpg';
                   }
-                } catch {
-                  coverImage = '/placeholder-imovel.jpg';
-                }
 
-                return (
-                  <a
-                    href={href}
-                    class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow border border-mist flex flex-col"
-                  >
-                    <div class="relative overflow-hidden h-64 bg-mist">
-                      <img
-                        src={coverImage}
-                        alt={cardTitle}
-                        class="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                      />
+                  return (
+                    <a
+                      href={href}
+                      data-property-card
+                      data-property-kind={propertyKind}
+                      class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow border border-mist flex flex-col"
+                    >
+                      <div class="relative overflow-hidden h-64 bg-mist">
+                        <img
+                          src={coverImage}
+                          alt={cardTitle}
+                          class="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
 
-                      <span class="absolute top-4 left-4 bg-paper/90 backdrop-blur-md text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
-                        {property.type === 'venda' ? 'Venda' : 'Aluguel'}
-                      </span>
-
-                      {property.featured && (
-                        <span class="absolute top-4 right-4 bg-brass text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
-                          Destaque
+                        <span class="absolute top-4 left-4 bg-paper/90 backdrop-blur-md text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
+                          {property.type === 'venda' ? 'Venda' : 'Aluguel'}
                         </span>
-                      )}
-                    </div>
 
-                    <div class="p-6 flex flex-col flex-grow">
-                      <p class="text-xs font-mono font-medium text-slate uppercase tracking-wide mb-1">
-                        {neighborhood ? `${neighborhood}, ` : ''}{city}
-                      </p>
+                        <span class="absolute top-4 left-[6.5rem] bg-white/90 backdrop-blur-md text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
+                          {propertyKind === 'casa' ? 'Casa' : 'Apartamento'}
+                        </span>
 
-                      <h3 class="text-ink font-display font-semibold text-lg mb-3">
-                        {cardTitle}
-                      </h3>
-
-                      <div class="flex items-center gap-4 text-sm text-slate mb-4">
-                        {bedrooms !== null && <span>{bedrooms} quartos</span>}
-                        {bathrooms !== null && <span>{bathrooms} banheiros</span>}
-                        {area !== null && <span>{area}m²</span>}
+                        {property.featured && (
+                          <span class="absolute top-4 right-4 bg-brass text-ink text-xs font-mono font-semibold px-3 py-1.5 rounded-full z-10">
+                            Destaque
+                          </span>
+                        )}
                       </div>
 
-                      <p class="font-display text-2xl font-bold text-ink mt-auto tabular-nums">
-                        {price}
-                      </p>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
+                      <div class="p-6 flex flex-col flex-grow">
+                        <p class="text-xs font-mono font-medium text-slate uppercase tracking-wide mb-1">
+                          {neighborhood ? `${neighborhood}, ` : ''}{city}
+                        </p>
+
+                        <h3 class="text-ink font-display font-semibold text-lg mb-3">
+                          {cardTitle}
+                        </h3>
+
+                        <div class="flex items-center gap-4 text-sm text-slate mb-4 flex-wrap">
+                          {bedrooms !== null && <span>{bedrooms} quartos</span>}
+                          {bathrooms !== null && <span>{bathrooms} banheiros</span>}
+                          {area !== null && <span>{area}m²</span>}
+                        </div>
+
+                        <p class="font-display text-2xl font-bold text-ink mt-auto tabular-nums">
+                          {price}
+                        </p>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+
+              <div
+                data-empty-filter
+                class="hidden rounded-[1.75rem] border border-mist bg-white p-8 sm:p-10"
+              >
+                <p class="font-display text-2xl font-semibold text-ink mb-3">Nenhum imóvel encontrado</p>
+                <p class="text-slate leading-relaxed">
+                  Não há imóveis nessa categoria em {title}. Tente trocar o filtro para ver mais opções.
+                </p>
+              </div>
+            </>
           ) : (
             <div class="rounded-[1.75rem] border border-mist bg-white p-8 sm:p-10">
               <p class="font-display text-2xl font-semibold text-ink mb-3">Nenhum imóvel encontrado</p>
@@ -232,5 +282,66 @@ const title = citySlugToLabel(citySlug);
         </div>
       </section>
     </main>
+
+    <script is:inline>
+      function updateResultsText(count) {
+        const text = `${count} resultado${count === 1 ? '' : 's'} encontrado${count === 1 ? '' : 's'}`;
+        const resultsText = document.querySelector('[data-results-text]');
+        const resultsCount = document.querySelector('[data-results-count]');
+
+        if (resultsText) resultsText.textContent = text;
+        if (resultsCount) resultsCount.textContent = String(count);
+      }
+
+      function applyPropertyFilter(filter) {
+        const cards = document.querySelectorAll('[data-property-card]');
+        const emptyFilter = document.querySelector('[data-empty-filter]');
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const kind = card.getAttribute('data-property-kind');
+          const shouldShow = filter === 'todos' || kind === filter;
+
+          card.classList.toggle('hidden', !shouldShow);
+
+          if (shouldShow) visibleCount += 1;
+        });
+
+        if (emptyFilter) {
+          emptyFilter.classList.toggle('hidden', visibleCount > 0);
+        }
+
+        updateResultsText(visibleCount);
+
+        document.querySelectorAll('[data-filter-btn]').forEach((button) => {
+          const isActive = button.getAttribute('data-filter-btn') === filter;
+
+          button.classList.toggle('bg-ink', isActive);
+          button.classList.toggle('text-white', isActive);
+          button.classList.toggle('border-ink', isActive);
+
+          button.classList.toggle('bg-white', !isActive);
+          button.classList.toggle('text-slate', !isActive);
+          button.classList.toggle('border-mist', !isActive);
+        });
+      }
+
+      function bindPropertyFilters() {
+        document.querySelectorAll('[data-filter-btn]').forEach((button) => {
+          button.addEventListener('click', () => {
+            const filter = button.getAttribute('data-filter-btn') || 'todos';
+            applyPropertyFilter(filter);
+          });
+        });
+
+        applyPropertyFilter('todos');
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindPropertyFilters);
+      } else {
+        bindPropertyFilters();
+      }
+    </script>
   </body>
 </html>

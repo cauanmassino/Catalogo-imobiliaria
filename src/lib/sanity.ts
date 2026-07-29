@@ -42,13 +42,17 @@ export interface NearbyPlace {
   minutes: number
 }
 
+export type PropertyBusinessType = 'venda' | 'aluguel'
+export type PropertyKind = 'casa' | 'apartamento'
+
 export interface Property {
   _id: string
   title: string
   slug: { current: string }
   city: string
   neighborhood?: string
-  type: 'venda' | 'aluguel'
+  type: PropertyBusinessType
+  propertyKind?: PropertyKind
   price: number
   description?: string
   featured: boolean
